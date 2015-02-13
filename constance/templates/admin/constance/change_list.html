@@ -61,10 +61,18 @@
                     <th><div class="text">{% trans "Is modified" %}</div></th>
                 </tr>
                 </thead>
-                {% for item in config %}
+                {% regroup config by group as config_list %}
+                {% for group_ in config_list %}
+                    {{ group_.grouper }}
+                <thead>
+                <tr>
+                    <th colspan="4">{{ group_.grouper }}</th>
+                </tr>
+                </thead>
+                {% for item in group_.list %}
                 <tr class="{% cycle 'row1' 'row2' %}">
-                    <th>{{ item.name }}
-                        <div class="help">{{ item.help_text }}</div>
+                    <th>{{ item.help_text }}
+                        <div class="help">{{ item.name }}</div>
                     </th>
                     <td>
                         {{ item.default }}
@@ -81,6 +89,7 @@
                         {% endif %}
                     </td>
                     </tr>
+                {% endfor %}
                 {% endfor %}
             </table>
             <p class="paginator">
