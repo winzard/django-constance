@@ -151,7 +151,7 @@ class ConstanceAdmin(admin.ModelAdmin):
                 'modified': value != default,
                 'form_field': form[name],
             })
-        context['config'].sort(key=itemgetter('group'))
+        context['config'].sort(key=itemgetter('group', 'help_text'))
         context_instance = RequestContext(request,
                                           current_app=self.admin_site.name)
         return render_to_response('admin/constance/change_list.html',
