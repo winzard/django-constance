@@ -61,9 +61,9 @@
                     <th><div class="text">{% trans "Is modified" %}</div></th>
                 </tr>
                 </thead>
-                {% regroup config by group as config_list %}
-                {% for group_ in config_list %}
-                <thead>
+            {% regroup config_values by group as config_list %}
+            {% for group_ in config_list %}
+            <thead>
                 <tr>
                     <th colspan="4"><h2>{{ group_.grouper }}</h2></th>
                 </tr>

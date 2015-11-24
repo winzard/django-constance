@@ -3,16 +3,19 @@ from decimal import Decimal
 import hashlib
 from operator import itemgetter
 
-from django import forms
+from django import forms, VERSION
+from django.conf.urls import url
 from django.contrib import admin, messages
 from django.contrib.admin import widgets
 from django.contrib.admin.options import csrf_protect_m
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.forms import fields
 from django.http import HttpResponseRedirect
+from django.template.response import TemplateResponse
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.utils import six
+from django.utils.encoding import smart_bytes
 from django.utils.formats import localize
 from django.utils.translation import ugettext_lazy as _
 
@@ -65,7 +68,7 @@ class ConstanceForm(forms.Form):
         super(ConstanceForm, self).__init__(*args, initial=initial, **kwargs)
         version_hash = hashlib.md5()
 
-        for name, (default, help_text, group) in settings.CONFIG.items():
+        for name, (default, help_text) in settings.CONFIG.items():
             config_type = type(default)
             if config_type not in FIELDS:
                 raise ImproperlyConfigured(_("Constance doesn't support "
@@ -94,17 +97,18 @@ class ConstanceForm(forms.Form):
 
 
 class ConstanceAdmin(admin.ModelAdmin):
+    change_list_template = 'admin/constance/change_list.html'
 
     def get_urls(self):
         info = self.model._meta.app_label, self.model._meta.module_name
-        return patterns('',
+        return [
             url(r'^$',
                 self.admin_site.admin_view(self.changelist_view),
                 name='%s_%s_changelist' % info),
             url(r'^$',
                 self.admin_site.admin_view(self.changelist_view),
                 name='%s_%s_add' % info),
-        )
+        ]
 
     @csrf_protect_m
     def changelist_view(self, request, extra_context=None):
@@ -129,7 +133,7 @@ class ConstanceAdmin(admin.ModelAdmin):
                 )
                 return HttpResponseRedirect('.')
         context = {
-            'config': [],
+            'config_values': [],
             'title': _('Constance config'),
             'app_label': 'constance',
             'opts': Config._meta,
@@ -142,7 +146,7 @@ class ConstanceAdmin(admin.ModelAdmin):
             # Then if the returned value is None, get the default
             if value is None:
                 value = getattr(config, name)
-            context['config'].append({
+            context['config_values'].append({
                 'name': name,
                 'default': localize(default),
                 'help_text': _(help_text),
@@ -151,12 +155,15 @@ class ConstanceAdmin(admin.ModelAdmin):
                 'modified': value != default,
                 'form_field': form[name],
             })
-        context['config'].sort(key=itemgetter('group', 'help_text'))
+        context['config_values'].sort(key=itemgetter('group', 'help_text'))
+        request.current_app = self.admin_site.name
+        # compatibility to be removed when 1.7 is deprecated
+        extra = {'current_app': self.admin_site.name} if VERSION < (1, 8) else {}
         context_instance = RequestContext(request,
                                           current_app=self.admin_site.name)
-        return render_to_response('admin/constance/change_list.html',
-            context, context_instance=context_instance)
-
+        return TemplateResponse(request, self.change_list_template, context,
+                                **extra)
+        
     def has_add_permission(self, *args, **kwargs):
         return False
 
@@ -178,6 +185,9 @@ class Config(object):
         get_ordered_objects = lambda x: False
         abstract = False
         swapped = False
+
+        # def get_ordered_objects(self):
+        #     return False
 
         def get_change_permission(self):
             return 'change_%s' % self.model_name
