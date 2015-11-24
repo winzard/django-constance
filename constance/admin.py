@@ -68,7 +68,7 @@ class ConstanceForm(forms.Form):
         super(ConstanceForm, self).__init__(*args, initial=initial, **kwargs)
         version_hash = hashlib.md5()
 
-        for name, (default, help_text) in settings.CONFIG.items():
+        for name, (default, help_text, group) in settings.CONFIG.items():
             config_type = type(default)
             if config_type not in FIELDS:
                 raise ImproperlyConfigured(_("Constance doesn't support "
