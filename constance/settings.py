@@ -5,6 +5,8 @@ BACKEND = getattr(settings, 'CONSTANCE_BACKEND',
 
 CONFIG = getattr(settings, 'CONSTANCE_CONFIG', {})
 
+ADDITIONAL_FIELDS = getattr(settings, 'CONSTANCE_ADDITIONAL_FIELDS', {})
+
 DATABASE_CACHE_BACKEND = getattr(settings, 'CONSTANCE_DATABASE_CACHE_BACKEND',
                                  None)
 
@@ -22,3 +24,7 @@ REDIS_CONNECTION_CLASS = getattr(settings, 'CONSTANCE_REDIS_CONNECTION_CLASS',
 REDIS_CONNECTION = getattr(settings, 'CONSTANCE_REDIS_CONNECTION', {})
 
 SUPERUSER_ONLY = getattr(settings, 'CONSTANCE_SUPERUSER_ONLY', True)
+
+IGNORE_ADMIN_VERSION_CHECK = getattr(settings,
+                                     'CONSTANCE_IGNORE_ADMIN_VERSION_CHECK',
+                                     False)

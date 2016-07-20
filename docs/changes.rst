@@ -1,6 +1,28 @@
 Changelog
 ---------
 
+v1.2 (2016/05/14)
+~~~~~~~~~~~~~~~~~
+
+* Custom Fields were added as a new feature
+
+* Added documentation on how to use Custom settings form
+
+* Introduced ``CONSTANCE_IGNORE_ADMIN_VERSION_CHECK``
+
+* Improved documentation for ``CONSTANCE_ADDITIONAL_FIELDS``
+
+v1.1.2 (2016/02/08)
+~~~~~~~~~~~~~~~~~~~
+
+* Moved to Jazzband organization (https://github.com/jazzband/django-constance)
+
+* Added Custom Fields
+
+* Added Django 1.9 support to tests
+
+* Fixes icons for Django 1.9 admin
+
 v1.1.1 (2015/10/01)
 ~~~~~~~~~~~~~~~~~~~
 
@@ -38,7 +60,7 @@ v1.0 (2014/12/04)
 
 * Added docs and set up Read The Docs project:
 
-  http://django-constance.readthedocs.org/
+  https://django-constance.readthedocs.io/
 
 * Set up Transifex project for easier translations:
 
