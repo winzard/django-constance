@@ -180,6 +180,10 @@ class ConstanceAdmin(admin.ModelAdmin):
         }
         for name, options in settings.CONFIG.items():
             default, help_text = options[0], options[1]
+            if len(options) > 3:
+                group = options[3]
+            else:
+                group = options[2]
             # First try to load the value from the actual backend
             value = initial.get(name)
             # Then if the returned value is None, get the default
@@ -189,6 +193,7 @@ class ConstanceAdmin(admin.ModelAdmin):
                 'name': name,
                 'default': localize(default),
                 'help_text': _(help_text),
+                'group': _(group),
                 'value': localize(value),
                 'modified': value != default,
                 'form_field': form[name],
