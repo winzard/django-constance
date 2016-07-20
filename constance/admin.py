@@ -95,12 +95,12 @@ class ConstanceForm(forms.Form):
         version_hash = hashlib.md5()
 
         for name, options in settings.CONFIG.items():
-	    default, help_text = options[0], options[1]
-	    if len(options) == 4:
+            default, help_text = options[0], options[1]
+            if len(options) == 4:
                config_type = options[2]
                group = options[3]
             else:
-               config_type = type(default)		
+               config_type = type(default)      
                group = options[2]
             if config_type not in FIELDS:
                 raise ImproperlyConfigured(_("Constance doesn't support "
