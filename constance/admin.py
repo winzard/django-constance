@@ -180,6 +180,7 @@ class ConstanceAdmin(admin.ModelAdmin):
         }
         for name, options in settings.CONFIG.items():
             default, help_text = options[0], options[1]
+            group = ''
             if len(options) > 3:
                 group = options[3]
             else:
