@@ -14,14 +14,11 @@ from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.forms import fields
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
-from django.shortcuts import render_to_response
-from django.template.context import RequestContext
 from django.utils import six
 from django.utils.encoding import smart_bytes
 from django.utils.formats import localize
 from django.utils.module_loading import import_string
 from django.utils.translation import ugettext_lazy as _
-
 
 
 from . import LazyConfig, settings
