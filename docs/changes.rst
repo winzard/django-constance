@@ -1,6 +1,77 @@
 Changelog
 ---------
 
+v2.0 (2017/02/17)
+~~~~~~~~~~~~~~~~~
+
+* **BACKWARD INCOMPATIBLE** Added the old value to the config_updated signal.
+
+* Added a `get_changelist_form` hook in the ModelAdmin.
+
+* Fix create_perm in apps.py to use database alias given by the post_migrate
+  signal.
+
+* Added tests for django 1.11.
+
+* Fix Reset to default to work with boolean/checkboxes.
+
+* Fix handling of MultiValueField's (eg SplitDateTimeField) on the command
+  line.
+
+v1.3.4 (2016/12/23)
+~~~~~~~~~~~~~~~~~~~
+
+* Fix config ordering issue
+
+* Added localize to check modified flag
+
+* Allow to rename Constance in Admin
+
+* Preserve line breaks in default value
+
+* Added functionality from django-constance-cli
+
+* Added "Reset to default" feature
+
+v1.3.3 (2016/09/17)
+~~~~~~~~~~~~~~~~~~~
+
+* Revert broken release
+
+v1.3.2 (2016/09/17)
+~~~~~~~~~~~~~~~~~~~
+
+* Fixes a bug where the signal was sent for fields without changes
+
+v1.3.1 (2016/09/15)
+~~~~~~~~~~~~~~~~~~~
+
+* Improved the signal path to avoid import errors
+
+* Improved the admin layout when using fieldsets
+
+v1.3 (2016/09/14)
+~~~~~~~~~~~~~~~~~
+
+* **BACKWARD INCOMPATIBLE** Dropped support for Django < 1.8).
+
+* Added ordering constance fields using OrderedDict
+
+* Added a signal when updating constance fields
+
+v1.2.1 (2016/09/1)
+~~~~~~~~~~~~~~~~~~
+
+* Added some fixes to small bugs
+
+* Fix cache when key changes
+
+* Upgrade django_redis connection string
+
+* Autofill cache key if key is missing
+
+* Added support for fieldsets
+
 v1.2 (2016/05/14)
 ~~~~~~~~~~~~~~~~~
 

@@ -68,25 +68,49 @@ Use this option in order to skip hash verification.
 
     CONSTANCE_IGNORE_ADMIN_VERSION_CHECK = True
 
+
+Signals
+-------
+
+Each time a value is changed it will trigger a ``config_updated`` signal.
+
+You can use it as:
+
+.. code-block:: python
+
+    from constance.signals import config_updated
+
+    @receiver(config_updated)
+    def constance_updated(sender, key, old_value, new_value, **kwargs):
+        print(sender, key, old_value, new_value)
+
+The sender is the ``config`` object, and the ``updated_key`` and ``new_value``
+are the ones just changed.
+
+This callback will get the ``config`` object as the first parameter so you
+can have an isolated function where you can access the ``config`` object
+without dealing with additional imports.
+
+
 Custom fields
 -------------
 
-You can set the field type with the third value in the `CONSTANCE_CONFIG` tuple.
+You can set the field type with the third value in the ``CONSTANCE_CONFIG`` tuple.
 
-The value can be one of the supported types or a string matching a key in your :setting:`CONSTANCE_ADDITIONAL_FIELDS`
+The value can be one of the supported types or a string matching a key in your :setting:``CONSTANCE_ADDITIONAL_FIELDS``
 
 The supported types are:
 
-* `bool`
-* `int`
-* `float`
-* `Decimal`
-* `long` (on python 2)
-* `str`
-* `unicode` (on python 2)
-* `datetime`
-* `date`
-* `time`
+* ``bool``
+* ``int``
+* ``float``
+* ``Decimal``
+* ``long`` (on python 2)
+* ``str``
+* ``unicode`` (on python 2)
+* ``datetime``
+* ``date``
+* ``time``
 
 For example, to force a value to be handled as a string:
 
@@ -95,13 +119,13 @@ For example, to force a value to be handled as a string:
         'THE_ANSWER': (42, 'Answer to the Ultimate Question of Life, '
                                    'The Universe, and Everything', str),
 
-Custom field types are supported using the dictionary :setting:`CONSTANCE_ADDITIONAL_FIELDS`.
+Custom field types are supported using the dictionary :setting:``CONSTANCE_ADDITIONAL_FIELDS``.
 
 This is a mapping between a field label and a sequence (list or tuple).  The first item in the sequence is the string
 path of a field class, and the (optional) second item is a dictionary used to configure the field.
 
-The `widget` and `widget_kwargs` keys in the field config dictionary can be used to configure the widget used in admin,
-the other values will be passed as kwargs to the field's `__init__()`
+The ``widget`` and ``widget_kwargs`` keys in the field config dictionary can be used to configure the widget used in admin,
+the other values will be passed as kwargs to the field's ``__init__()``
 
 Note: Use later evaluated strings instead of direct classes for the field and widget classes:
 
@@ -110,13 +134,48 @@ Note: Use later evaluated strings instead of direct classes for the field and wi
         CONSTANCE_ADDITIONAL_FIELDS = {
             'yes_no_null_select': ['django.forms.fields.ChoiceField', {
                 'widget': 'django.forms.Select',
-                'choices': (("-----", None), ("yes", "Yes"), ("no", "No"))
+                'choices': ((None, "-----"), ("yes", "Yes"), ("no", "No"))
             }],
         }
 
         CONSTANCE_CONFIG = {
             'MY_SELECT_KEY': ('yes', 'select yes or no', 'yes_no_null_select'),
         }
+
+Ordered Fields in Django Admin
+------------------------------
+
+In order to Order the fields , you can use OrderedDict collection. Here is an example:
+
+.. code-block:: python
+
+        from collections import OrderedDict
+
+        CONSTANCE_CONFIG = OrderedDict([
+            ('SITE_NAME', ('My Title', 'Website title')),
+            ('SITE_DESCRIPTION', ('', 'Website description')),
+            ('THEME', ('light-blue', 'Website theme')),
+        ])
+
+
+Fieldsets
+---------
+
+To group settings together you can define fieldsets. Here's an example:
+
+.. code-block:: python
+
+        CONSTANCE_CONFIG = {
+            'SITE_NAME': ('My Title', 'Website title'),
+            'SITE_DESCRIPTION': ('', 'Website description'),
+            'THEME': ('light-blue', 'Website theme'),
+        }
+
+        CONSTANCE_CONFIG_FIELDSETS = {
+            'General Options': ('SITE_NAME', 'SITE_DESCRIPTION'),
+            'Theme Options': ('THEME',),
+        }
+.. image:: screenshot3.png
 
 Usage
 -----
@@ -175,6 +234,63 @@ any other variable, e.g.:
         to signup for our newletter.
     {% endif %}
 
+Command Line
+^^^^^^^^^^^^
+
+Constance settings can be get/set on the command line with the manage command `constance`
+
+Available options are:
+
+list - output all values in a tab-separated format::
+
+    $ ./manage.py constance list
+    THE_ANSWER 42
+    SITE_NAME  My Title
+
+get KEY - output a single values::
+
+    $ ./manage.py constance get THE_ANSWER
+    42
+
+set KEY VALUE - set a single value::
+
+    $ ./manage.py constance set SITE_NAME "Another Title"
+
+If the value contains spaces it should be wrapped in quotes.
+
+.. note::  Set values are validated as per in admin, an error will be raised if validation fails:
+
+Eg, given this config as per the example app::
+
+   CONSTANCE_CONFIG = {
+       ...
+       'DATE_ESTABLISHED': (date(1972, 11, 30), "the shop's first opening"),
+   }
+
+Then setting an invalid date will fail as follow::
+
+   $ ./manage.py constance set DATE_ESTABLISHED '1999-12-00'
+   CommandError: Enter a valid date.
+
+
+.. note::  If the admin fields is a `MultiValueField`, (e.g. datetime, which uses `SplitDateTimeField` by default)
+then the separate field values need to be provided as separate arguments.
+
+Eg, given this config::
+
+   CONSTANCE_CONFIG = {
+       'DATETIME_VALUE': (datetime(2010, 8, 23, 11, 29, 24), 'time of the first commit'),
+   }
+
+Then this works (and the quotes are optional)::
+
+   ./manage.py constance set DATETIME_VALUE '2011-09-24' '12:30:25'
+
+This doesn't work::
+
+   ./manage.py constance set DATETIME_VALUE '2011-09-24 12:30:25'
+   CommandError: Enter a list of values.
+
 Editing
 -------
 
@@ -216,6 +332,24 @@ settings the way you like.
     admin.site.unregister([Config])
     admin.site.register([Config], ConfigAdmin)
 
+You can also override the ``get_changelist_form`` method which is called in
+``changelist_view`` to get the actual form used to change the settings. This
+allows you to pick a different form according to the user that makes the
+request. For example:
+
+.. code-block:: python
+
+    class SuperuserForm(ConstanceForm):
+        # Do some stuff here
+
+    class MyConstanceAdmin(ConstanceAdmin):
+        def get_changelist_form(self, request):
+            if request.user.is_superuser:
+              return SuperuserForm:
+            else:
+              return super(MyConstanceAdmin, self).get_changelist_form(request)
+
+Note that the default method returns ``self.change_list_form``.
 
 More documentation
 ------------------

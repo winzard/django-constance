@@ -1,13 +1,9 @@
 # -*- encoding: utf-8 -*-
-import django
 from django.utils import six
 
-from datetime import datetime, date, time
+from datetime import datetime, date, time, timedelta
 from decimal import Decimal
 
-
-if django.VERSION[:2] < (1, 6):
-    TEST_RUNNER = 'discover_runner.DiscoverRunner'
 
 SECRET_KEY = 'cheese'
 
@@ -25,6 +21,10 @@ DATABASE_ENGINE = 'sqlite3'
 
 DATABASES = {
     'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    },
+    'secondary': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': ':memory:',
     }
@@ -52,13 +52,15 @@ if not six.PY3:
     long_value = long(long_value)
 
 CONSTANCE_ADDITIONAL_FIELDS = {
-     'yes_no_null_select': ['django.forms.fields.ChoiceField',
-         {
-         'widget': 'django.forms.Select',
-         'choices': (("-----", None), ("yes", "Yes"), ("no", "No"))
-         }],
-     # note this intentionally uses a tuple so that we can test immutable
-     'email': ('django.forms.fields.EmailField',),
+    'yes_no_null_select': [
+        'django.forms.fields.ChoiceField',
+        {
+            'widget': 'django.forms.Select',
+            'choices': ((None, "-----"), ("yes", "Yes"), ("no", "No"))
+        }
+    ],
+    # note this intentionally uses a tuple so that we can test immutable
+    'email': ('django.forms.fields.EmailField',),
 }
 
 CONSTANCE_CONFIG = {
@@ -66,13 +68,14 @@ CONSTANCE_CONFIG = {
     'LONG_VALUE': (long_value, 'some looong int'),
     'BOOL_VALUE': (True, 'true or false'),
     'STRING_VALUE': ('Hello world', 'greetings'),
-    'UNICODE_VALUE': (six.u('Rivière-Bonjour'), 'greetings'),
+    'UNICODE_VALUE': (u'Rivière-Bonjour რუსთაველი', 'greetings'),
     'DECIMAL_VALUE': (Decimal('0.1'), 'the first release version'),
     'DATETIME_VALUE': (datetime(2010, 8, 23, 11, 29, 24),
                        'time of the first commit'),
     'FLOAT_VALUE': (3.1415926536, 'PI'),
     'DATE_VALUE': (date(2010, 12, 24), 'Merry Chrismas'),
     'TIME_VALUE': (time(23, 59, 59), 'And happy New Year'),
+    'TIMEDELTA_VALUE': (timedelta(days=1, hours=2, minutes=3), 'Interval'),
     'CHOICE_VALUE': ('yes', 'select yes or no', 'yes_no_null_select'),
     'LINEBREAK_VALUE': ('Spam spam', 'eggs\neggs'),
     'EMAIL_VALUE': ('test@example.com', 'An email', 'email'),
@@ -92,7 +95,9 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
                 'django.template.context_processors.request',
+                'django.template.context_processors.static',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'constance.context_processors.config',
@@ -100,15 +105,3 @@ TEMPLATES = [
         },
     },
 ]
-
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.contrib.auth.context_processors.auth',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.i18n',
-    'django.core.context_processors.media',
-    'django.core.context_processors.static',
-    'django.core.context_processors.tz',
-    'django.core.context_processors.request',
-    'django.contrib.messages.context_processors.messages',
-    'constance.context_processors.config',
-)
